@@ -1,23 +1,22 @@
+import base64
 NUM_OF_BITS = 128
 MASK8 =  0xff
 MASK32 = 0xffffffff
 MASK64 = 0xffffffffffffffff
 MASK128 = 0xffffffffffffffffffffffffffffffff
 
-#64 bit constants
-Sigma1 = 0xA09E667F3BCC908B # 64 bits
-Sigma2 = 0xB67AE8584CAA73B2 # 64 bits
-Sigma3 = 0xC6EF372FE94F82BE # 64 bits
-Sigma4 = 0x54FF53A5F1D36F1C # 63 bits
-Sigma5 = 0x10E527FADE682D1D # 61 bits
-Sigma6 = 0xB05688C2B3E6C1FD # 64 bits
+Sigma1 = 0xA09E667F3BCC908B 
+Sigma2 = 0xB67AE8584CAA73B2
+Sigma3 = 0xC6EF372FE94F82BE
+Sigma4 = 0x54FF53A5F1D36F1C
+Sigma5 = 0x10E527FADE682D1D
+Sigma6 = 0xB05688C2B3E6C1FD
 
 #SECRET KEY (128 bits)
 def text_to_int(P):
     result = ""
     for c in P:
         s = str(ord(c)) 
-        #pad with zero to make the ascii value length equal to 3
         result += (3-len(s))*"0" + s
     #add 1 as the starting integer
     result = "1"+result
@@ -25,7 +24,7 @@ def text_to_int(P):
 K = input("Enter key: ")
 K = text_to_int(K)
 while len(bin(K))-2 > NUM_OF_BITS:
-    K = input("Key too long, please enter new key: ")
+    K = input("Key demasiado larga, ingrese una mas corta ");
     K = text_to_int(K)
 # K = 0xf54cfbf8329ef7564b1f9d85adf0f132
 
@@ -68,27 +67,7 @@ def left_rotate(n, d,bits):
 
 
 def block_encryption(K: int, P: str):
-    '''
-    Encrypts a single block
-    Inputs:
-    K: 128 bits
-    P: Plaintext
-
-    Output:
-    C: Ciphertext of the block
-    '''
-    # Key scheduling Part
-
-
-
-    #     The aim of key schedule is to prevent key-based attacks such as:
-    #     ~related-key attack
-    #     ~slide attack, rotational attack
-    #     ~whitening(pre and post)
-
-    # Sigmas are used as "keys" in the F-function
     
-    #128 bits
     KL = K
     KR = 0
 
@@ -102,7 +81,7 @@ def block_encryption(K: int, P: str):
     D1 = D1 ^ F(D2, Sigma4)
     KA = (D1 << 64) | D2
     
-    bits = NUM_OF_BITS #size in bits
+    bits = NUM_OF_BITS 
     kw1 = (left_rotate(KL, 0, bits)) >> 64
     kw2 = left_rotate(KL, 0, bits) & MASK64
     k1  = left_rotate(KA, 0, bits) >> 64
@@ -144,13 +123,7 @@ def block_encryption(K: int, P: str):
     D2 = D2 ^ F(D1, k5)    # Round 5
     D1 = D1 ^ F(D2, k6)    # Round 6
 
-    #--------
-    # For cryptanalysis
-    # D2 = D2 ^ kw3          # Postwhitening
-    # D1 = D1 ^ kw4 
-    # C = (D2 << 64) | D1 #128 bit cipher text
-    # return C
-    #--------
+   
     D1 = FL   (D1, ke1)    # FL
     D2 = FLINV(D2, ke2)    # FLINV
     D2 = D2 ^ F(D1, k7)    # Round 7
@@ -319,4 +292,9 @@ P_numeric = text_to_int(P)
 
 # print("Numeric equivalent:",P_numeric)
 C = encryption(K, P_numeric)
-print("Encrypted text:",C)
+print("\n\n\nEncrypted text (decimal):", C)
+
+# toma solo los últimos 128 bits (1 bloque)
+C_last_block = C & ((1 << 128) - 1)
+cipher_bytes = C_last_block.to_bytes(16, 'big')
+print("Encrypted (base64):", base64.b64encode(cipher_bytes).decode())
