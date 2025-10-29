@@ -1,2 +1,2 @@
-# Camellia 128 ECD
+# Camellia 128 ECB
  
